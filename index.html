@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NetSearch v3.0 | OSINT Tool</title>
+    <title>NetSearch v4.0 | Ultimate Tool</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         /* --- СТИЛИ CYBERPUNK --- */
@@ -16,17 +16,40 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            padding: 20px;
         }
 
-        .container {
+        .main-wrapper {
+            display: flex;
+            gap: 20px;
             width: 100%;
-            max-width: 550px;
+            max-width: 900px;
+            flex-wrap: wrap;
+        }
+
+        /* ЛЕВАЯ КОЛОНКА (ВВОД) */
+        .container {
+            flex: 1;
+            min-width: 300px;
             padding: 30px;
             border: 1px solid #333;
             border-top: 3px solid #00ff41;
             box-shadow: 0 0 30px rgba(0, 255, 65, 0.1);
             background: rgba(10, 10, 10, 0.95);
-            position: relative;
+        }
+
+        /* ПРАВАЯ КОЛОНКА (ТЕРМИНАЛ) */
+        .terminal-box {
+            flex: 1;
+            min-width: 300px;
+            background: #000;
+            border: 1px solid #333;
+            padding: 15px;
+            height: 500px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            color: #00cc00;
+            opacity: 0.8;
         }
 
         h1 {
@@ -34,262 +57,243 @@
             letter-spacing: 3px;
             margin-bottom: 20px;
             font-size: 1.5rem;
+            border-bottom: 1px dashed #333;
+            padding-bottom: 15px;
         }
 
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
-        }
+        .input-group { display: flex; gap: 10px; margin-bottom: 25px; }
 
         input {
-            flex: 1;
-            background: #000;
-            border: 1px solid #005500;
-            color: #00ff41;
-            padding: 15px;
-            font-size: 1.2rem;
-            font-family: inherit;
-            outline: none;
-            transition: 0.3s;
+            flex: 1; background: #000; border: 1px solid #005500; color: #00ff41;
+            padding: 15px; font-size: 1.2rem; font-family: inherit; outline: none; transition: 0.3s;
         }
-
         input:focus { border-color: #00ff41; }
 
         button {
-            background: #00ff41;
-            color: black;
-            border: none;
-            padding: 15px 25px;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            font-family: inherit;
-            transition: 0.3s;
+            background: #00ff41; color: black; border: none; padding: 15px 25px;
+            font-weight: bold; font-size: 1rem; cursor: pointer; font-family: inherit; transition: 0.3s;
         }
+        button:hover { background: #fff; box-shadow: 0 0 15px #fff; }
 
-        button:hover {
-            background: #fff;
-            box-shadow: 0 0 15px #fff;
-        }
-
-        /* БЛОК РЕЗУЛЬТАТОВ */
-        .result-screen {
-            border-top: 1px dashed #333;
-            padding-top: 20px;
-            display: none; /* Скрыто по умолчанию */
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        /* РЕЗУЛЬТАТЫ */
+        .result-screen { display: none; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .result-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            border-bottom: 1px solid #111;
-            padding-bottom: 5px;
+            display: flex; justify-content: space-between; margin-bottom: 12px;
+            border-bottom: 1px solid #111; padding-bottom: 5px;
         }
+        .label { color: #666; }
+        .value { color: #fff; text-align: right; cursor: pointer; }
+        .value:hover { color: #00ff41; text-decoration: underline; }
 
-        .label { color: #666; font-size: 0.9rem; }
-        .value { color: #fff; text-shadow: 0 0 2px #00ff41; text-align: right;}
-        
-        /* Цвета для статусов */
-        .status-valid { color: #00ff41; }
-        .status-error { color: #ff3333; text-shadow: 0 0 5px red; }
-        .tag-gold { color: #ffd700; text-shadow: 0 0 5px #ffd700; }
-
-        /* КНОПКИ МЕССЕНДЖЕРОВ */
-        .actions {
-            margin-top: 25px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+        /* ИСТОРИЯ */
+        .history-box { margin-top: 30px; border-top: 1px solid #333; padding-top: 10px; }
+        .history-title { font-size: 0.9rem; color: #666; margin-bottom: 10px; }
+        .history-item { 
+            background: #111; padding: 8px; margin-bottom: 5px; font-size: 0.9rem; 
+            display: flex; justify-content: space-between; color: #aaa;
         }
+        .history-item span { color: #00ff41; }
 
+        /* Ссылки */
+        .actions { margin-top: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .action-btn {
-            text-decoration: none;
-            padding: 12px;
-            text-align: center;
-            border: 1px solid #00ff41;
-            color: #00ff41;
-            font-size: 0.9rem;
-            transition: 0.3s;
-            background: rgba(0, 255, 65, 0.05);
+            text-decoration: none; padding: 12px; text-align: center; border: 1px solid #00ff41;
+            color: #00ff41; font-size: 0.9rem; transition: 0.3s; background: rgba(0, 255, 65, 0.05);
         }
+        .action-btn:hover { background: #00ff41; color: #000; }
 
-        .action-btn:hover {
-            background: #00ff41;
-            color: #000;
-        }
-
-        .loader {
-            text-align: center;
-            color: #00ff41;
-            display: none;
-            margin: 20px 0;
-        }
+        /* Лог терминала */
+        .log-line { margin-bottom: 3px; }
+        .log-time { color: #555; margin-right: 10px; }
+        .log-warn { color: yellow; }
+        .log-success { color: #00ff41; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>OSINT NUMBER CHECKER</h1>
+    <div class="main-wrapper">
         
-        <div class="input-group">
-            <input type="text" id="phoneInput" placeholder="77771234567" maxlength="12">
-            <button onclick="analyzeNumber()">SCAN</button>
-        </div>
-
-        <div class="loader" id="loader">
-            [ SYSTEM SCANNING... ]
-        </div>
-
-        <div class="result-screen" id="result">
+        <div class="container">
+            <h1>NETSEARCH v4.0</h1>
             
-            <div class="result-row">
-                <span class="label">ФОРМАТ:</span>
-                <span class="value" id="res-format">-</span>
+            <div class="input-group">
+                <input type="text" id="phoneInput" placeholder="77771234567" maxlength="12">
+                <button onclick="startScan()">SCAN</button>
             </div>
 
-            <div class="result-row">
-                <span class="label">СТРАНА:</span>
-                <span class="value" id="res-country">-</span>
+            <div class="result-screen" id="result">
+                <div class="result-row">
+                    <span class="label">ФОРМАТ:</span>
+                    <span class="value" id="res-format" title="Нажми, чтобы скопировать">-</span>
+                </div>
+                <div class="result-row">
+                    <span class="label">СТРАНА:</span>
+                    <span class="value" id="res-country">-</span>
+                </div>
+                <div class="result-row">
+                    <span class="label">ОПЕРАТОР:</span>
+                    <span class="value" id="res-operator">-</span>
+                </div>
+                <div class="result-row">
+                    <span class="label">РЕГИОН:</span>
+                    <span class="value" id="res-region">-</span>
+                </div>
+                
+                <div class="actions">
+                    <a href="#" target="_blank" id="btn-wa" class="action-btn">WhatsApp</a>
+                    <a href="#" target="_blank" id="btn-tg" class="action-btn">Telegram</a>
+                </div>
             </div>
 
-            <div class="result-row">
-                <span class="label">ОПЕРАТОР:</span>
-                <span class="value" id="res-operator">-</span>
+            <div class="history-box">
+                <div class="history-title">RECENT TARGETS (HISTORY):</div>
+                <div id="history-list">
+                    </div>
             </div>
-
-            <div class="result-row">
-                <span class="label">ТИП СЕТИ:</span>
-                <span class="value" id="res-type">-</span>
-            </div>
-
-            <div class="result-row">
-                <span class="label">РЕГИОН / ГОРОД:</span>
-                <span class="value" id="res-region">-</span>
-            </div>
-
-            <div class="result-row">
-                <span class="label">КАТЕГОРИЯ:</span>
-                <span class="value" id="res-category">-</span>
-            </div>
-
-            <div class="actions">
-                <a href="#" target="_blank" id="btn-wa" class="action-btn">WhatsApp Chat</a>
-                <a href="#" target="_blank" id="btn-tg" class="action-btn">Telegram Link</a>
-            </div>
-
         </div>
+
+        <div class="terminal-box" id="terminal">
+            <div class="log-line"><span class="log-time">SYS:</span>System ready...</div>
+            <div class="log-line"><span class="log-time">SYS:</span>Waiting for input...</div>
+        </div>
+
     </div>
 
     <script>
-        function analyzeNumber() {
+        // Загружаем историю при старте
+        loadHistory();
+
+        function startScan() {
             const input = document.getElementById('phoneInput').value;
             const resultBox = document.getElementById('result');
-            const loader = document.getElementById('loader');
-
-            // 1. Очистка (убираем +, скобки, пробелы)
             let clean = input.replace(/\D/g, ''); 
 
-            // Сброс интерфейса
+            if (clean.length < 10) {
+                addToLog("ERROR: Invalid input length", "warn");
+                return;
+            }
+
+            // Очистка терминала и старт анимации
+            document.getElementById('terminal').innerHTML = '';
             resultBox.style.display = 'none';
-            loader.style.display = 'block';
+            
+            // Запуск "хакерских" логов с задержкой
+            runTerminalEffect(clean, () => {
+                showResult(clean);
+                saveToHistory(clean);
+            });
+        }
 
-            setTimeout(() => {
-                loader.style.display = 'none';
-                resultBox.style.display = 'block';
+        // Логика анализа (как и раньше, но внутри функции)
+        function showResult(clean) {
+            let country = "Неизвестно";
+            let operator = "Не определен";
+            let region = "-";
+            let formatted = `+${clean}`;
 
-                // --- ЛОГИКА АНАЛИЗА ---
-                
-                let country = "Неизвестно ❓";
-                let operator = "Не определен";
-                let type = "Неизвестно";
-                let region = "Вся страна";
-                let category = "Обычный номер";
-                let formatted = input;
+            // Логика KZ/RU
+            if (clean.startsWith('7')) {
+                let code = clean.substring(1, 4);
+                const kzMobile = ['700','701','702','705','707','708','747','750','751','771','775','776','777','778'];
+                const kzLandline = {'727': 'Алматы', '717': 'Астана', '721': 'Караганда', '725': 'Шымкент'};
 
-                // Если номер пустой или короткий
-                if (clean.length < 10) {
-                    document.getElementById('res-format').innerHTML = "<span class='status-error'>ОШИБКА ДЛИНЫ</span>";
-                    return;
+                if (kzMobile.includes(code)) {
+                    country = "🇰🇿 Казахстан";
+                    if(['701','702','775','778'].includes(code)) operator = "Kcell / Activ";
+                    else if(['777','705','771','776'].includes(code)) operator = "Beeline KZ";
+                    else if(['707','747'].includes(code)) operator = "Tele2 KZ";
+                    else if(['700','708'].includes(code)) operator = "Altel 4G";
+                } else if (code in kzLandline) {
+                    country = "🇰🇿 Казахстан";
+                    operator = "Kazakhtelecom";
+                    region = kzLandline[code];
+                } else if(code.startsWith('9')) {
+                    country = "🇷🇺 Россия";
+                    operator = "MTS / Megafon / Beeline RU";
                 }
+            }
 
-                // 2. Определяем страну (по первой цифре)
-                if (clean.startsWith('7')) {
-                    // Это KZ или RU
-                    let code = clean.substring(1, 4); // Код (например 777)
+            // Форматирование
+            if(clean.length === 11) {
+                formatted = `+${clean[0]} (${clean.substring(1,4)}) ${clean.substring(4,7)}-${clean.substring(7,9)}-${clean.substring(9,11)}`;
+            }
 
-                    // --- КАЗАХСТАН ---
-                    // Мобильные коды
-                    const kzMobile = ['700','701','702','705','707','708','747','750','751','760','761','762','763','764','771','775','776','777','778'];
-                    // Городские коды (основные)
-                    const kzLandline = {'727': 'Алматы', '717': 'Астана', '721': 'Караганда', '725': 'Шымкент', '713': 'Актобе'};
+            // Вывод
+            document.getElementById('res-format').innerText = formatted;
+            document.getElementById('res-country').innerText = country;
+            document.getElementById('res-operator').innerText = operator;
+            document.getElementById('res-region').innerText = region;
+            
+            document.getElementById('btn-wa').href = `https://wa.me/${clean}`;
+            document.getElementById('btn-tg').href = `https://t.me/+${clean}`;
+            
+            // Показываем блок
+            document.getElementById('result').style.display = 'block';
 
-                    if (kzMobile.includes(code)) {
-                        country = "🇰🇿 Казахстан";
-                        type = "Мобильный (GSM/LTE)";
-                        
-                        // Определяем оператора
-                        if(['701','702','775','778'].includes(code)) operator = "Kcell / Activ";
-                        else if(['777','705','771','776'].includes(code)) operator = "Beeline KZ";
-                        else if(['707','747'].includes(code)) operator = "Tele2 KZ";
-                        else if(['700','708'].includes(code)) operator = "Altel 4G";
-                        else operator = "Виртуальный оператор (MVNO)";
+            // Копирование по клику на номер
+            document.getElementById('res-format').onclick = function() {
+                navigator.clipboard.writeText(formatted);
+                addToLog("Number copied to clipboard!", "success");
+                alert("Номер скопирован!");
+            }
+        }
 
-                    } else if (code in kzLandline) {
-                        country = "🇰🇿 Казахстан";
-                        type = "Городской (Landline)";
-                        operator = "Казахтелеком";
-                        region = kzLandline[code]; // Пишем город (Алматы/Астана)
-                    } else {
-                        // Если код начинается на 9 (900, 926 и т.д.) - это Россия
-                        if(code.startsWith('9')) {
-                             country = "🇷🇺 Россия";
-                             type = "Мобильный";
-                             operator = "Оператор РФ (MTS/Megafon/Beeline)";
-                        } else {
-                             country = "🇰🇿 Казахстан / 🇷🇺 Россия";
-                        }
-                    }
-                }
+        // --- ЭФФЕКТ ТЕРМИНАЛА ---
+        function runTerminalEffect(number, callback) {
+            const steps = [
+                `Connecting to server 192.168.0.1...`,
+                `Handshake established (Secure)`,
+                `Scanning Global Database for *${number.substring(0,5)}***...`,
+                `Bypassing firewall (Proxy: 8080)...`,
+                `Decrypting packages...`,
+                `Analysing HLR/VLR records...`,
+                `Target found! Fetching data...`,
+                `DONE.`
+            ];
 
-                // 3. Проверка на "Золотой номер" (Красивый)
-                // Логика: если в конце 3 или 4 одинаковые цифры
-                let last4 = clean.substring(clean.length - 4);
-                let last3 = clean.substring(clean.length - 3);
+            let delay = 0;
+            steps.forEach((step, index) => {
+                delay += Math.floor(Math.random() * 300) + 200; // Случайная задержка
+                setTimeout(() => {
+                    addToLog(step, index === steps.length - 1 ? "success" : "");
+                    if (index === steps.length - 1) callback();
+                }, delay);
+            });
+        }
 
-                if (last4[0] === last4[1] && last4[1] === last4[2] && last4[2] === last4[3]) {
-                    category = "<span class='tag-gold'>★ GOLD (VIP) ★</span>";
-                } else if (last3[0] === last3[1] && last3[1] === last3[2]) {
-                    category = "<span class='tag-gold'>★ SILVER ★</span>";
-                }
+        function addToLog(text, type) {
+            const terminal = document.getElementById('terminal');
+            const time = new Date().toLocaleTimeString('en-US', {hour12: false});
+            let colorClass = type === 'warn' ? 'log-warn' : (type === 'success' ? 'log-success' : '');
+            
+            terminal.innerHTML += `<div class="log-line ${colorClass}"><span class="log-time">[${time}]</span>${text}</div>`;
+            terminal.scrollTop = terminal.scrollHeight; // Автопрокрутка вниз
+        }
 
-                // 4. Форматирование номера (+7 ...)
-                if(clean.length === 11) {
-                    formatted = `+${clean[0]} (${clean.substring(1,4)}) ${clean.substring(4,7)}-${clean.substring(7,9)}-${clean.substring(9,11)}`;
-                }
+        // --- ИСТОРИЯ (LOCALSTORAGE) ---
+        function saveToHistory(number) {
+            let history = JSON.parse(localStorage.getItem('phoneHistory')) || [];
+            
+            // Не добавляем дубликаты подряд
+            if(history.length > 0 && history[0] === number) return;
 
-                // --- ЗАПОЛНЕНИЕ ДАННЫХ ---
-                document.getElementById('res-format').innerText = formatted;
-                document.getElementById('res-country').innerText = country;
-                document.getElementById('res-operator').innerText = operator;
-                document.getElementById('res-type').innerText = type;
-                document.getElementById('res-region').innerText = region;
-                document.getElementById('res-category').innerHTML = category;
+            history.unshift(number); // Добавляем в начало
+            if (history.length > 5) history.pop(); // Храним только 5 последних
 
-                // --- ССЫЛКИ НА МЕССЕНДЖЕРЫ ---
-                // WhatsApp требует номер без плюса (7777...)
-                document.getElementById('btn-wa').href = `https://wa.me/${clean}`;
-                // Telegram требует номер с плюсом (+7777...)
-                document.getElementById('btn-tg').href = `https://t.me/+${clean}`;
+            localStorage.setItem('phoneHistory', JSON.stringify(history));
+            loadHistory();
+        }
 
-            }, 700);
+        function loadHistory() {
+            const list = document.getElementById('history-list');
+            let history = JSON.parse(localStorage.getItem('phoneHistory')) || [];
+            
+            list.innerHTML = '';
+            history.forEach(num => {
+                list.innerHTML += `<div class="history-item">Target: <span>${num}</span></div>`;
+            });
         }
     </script>
 
